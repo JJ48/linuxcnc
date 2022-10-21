@@ -79,6 +79,49 @@ option for systems using the Mesa ethernet-connected hardware driver
 cards. In general preempt-rt has the worst latency of the available
 systems, but there are exceptions.
 
+==== Tuning for optimal latency
+
+The Preempt-RT kernel may benefit from tuning in order to provide the
+best latency for LinuxCNC.  Tuning may be done via the kernel command
+line, sysctl, and via files in `/proc` and `/sys`.
+
+When specific tuning options are believed to be universally helpful
+LinuxCNC does this tuning automatically at startup, but many tuning
+options are machine-specific and cannot be done automatically.  The person
+installing LinuxCNC will need to experimentally determine the optimal
+tuning for their system.
+
+A primary goal in tuning the system for LinuxCNC is to reserve one or
+more CPUs for the exclusive use of LinuxCNC's realtime tasks, so that
+other tasks (both user programs and kernel threads) do not interfere
+with LinuxCNC's access to those CPUs.
+
+Some tuning parameters to look into:
+
+Kernel command line::
+
+    Details here: <https://www.kernel.org/doc/Documentation/admin-guide/kernel-parameters.txt>
+
+    * `isolcpus`: Prevent most non-LinuxCNC processes from using these
+      CPUs, leaving more CPU time available for LinuxCNC.
+
+    * `irqaffinity`: Select which CPUs service interrupts, so that the
+      CPUs reserved for LinuxCNC realtime don't have to perform this task.
+
+    * `rcu_nocbs`: Prevent RCU callbacks from running on these CPUs.
+
+    * `rcu_nocb_poll`: Poll for RCU callbacks instead of using sleep/wake.
+
+    * `nohz_full`: Disable clock tick on these CPUs.
+
+Sysctl::
+
+    Details here: <https://www.kernel.org/doc/html/latest/scheduler/sched-rt-group.html>
+
+    * `sysctl.kernel.sched_rt_runtime_us`: Set to -1 to remove the limit
+      on how much time realtime tasks may use.
+
+
 === RTAI with 'linuxcnc' package
 
 RTAI has been the mainstay of LinuxCNC distributions for many years. It
